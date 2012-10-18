@@ -21,17 +21,11 @@ package org.thymeleaf.standard.expression;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -318,47 +312,36 @@ public final class LinkExpression extends SimpleExpression {
         }
         
         final IWebContext webContext = (IWebContext) processingContext.getContext();
-        
-        String sessionFragment = "";
-        
         final HttpServletRequest request = webContext.getHttpServletRequest();
-        final HttpSession session = webContext.getHttpSession();
-        if(null != session){
-            final String sessionID  = session.getId();
-            
-            if (!request.isRequestedSessionIdFromCookie() && !isUserAgentGoogleBot(request)) {
-                sessionFragment = ";jsessionid=" + sessionID;
-            }
-        }
-        
+
         if (isLinkBaseContextRelative(linkBase)) {
             
             final String contextName = request.getContextPath();
             
             if (questionMarkPosition == -1) {
-                return contextName + linkBase + sessionFragment + parametersBuffer.toString() + urlFragment;
+                return contextName + linkBase + parametersBuffer.toString() + urlFragment;
             }
             
             final String linkBasePart1 = linkBase.substring(0,questionMarkPosition);
             final String linkBasePart2 = linkBase.substring(questionMarkPosition);
-            return contextName + linkBasePart1 + sessionFragment + linkBasePart2 + parametersBuffer.toString() + urlFragment;
+            return contextName + linkBasePart1 + linkBasePart2 + parametersBuffer.toString() + urlFragment;
             
         } else if (isLinkBaseServerRelative(linkBase)) {
             
             if (questionMarkPosition == -1) {
                 // remove the "~" from the link base
-                return linkBase.substring(1) + sessionFragment + parametersBuffer.toString() + urlFragment;
+                return linkBase.substring(1) + parametersBuffer.toString() + urlFragment;
             }
             
             final String linkBasePart1 = linkBase.substring(0,questionMarkPosition);
             final String linkBasePart2 = linkBase.substring(questionMarkPosition);
             // remove the "~" from the link base part 1 
-            return linkBasePart1.substring(1) + sessionFragment + linkBasePart2 + parametersBuffer.toString() + urlFragment;
+            return linkBasePart1.substring(1) + linkBasePart2 + parametersBuffer.toString() + urlFragment;
             
         }
 
         
-        return linkBase + sessionFragment + parametersBuffer.toString() + urlFragment;
+        return linkBase + parametersBuffer.toString() + urlFragment;
         
     }
     

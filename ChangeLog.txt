@@ -1,3 +1,7 @@
+2.0.14-ID
+=========
+- Do not add JSESSIONID to the URL
+
 2.0.14
 ======
 - Make "and" and "or" operators in Standard Expressions short circuit (second operand is never
