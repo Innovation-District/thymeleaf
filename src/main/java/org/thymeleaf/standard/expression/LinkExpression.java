@@ -233,7 +233,7 @@ public final class LinkExpression extends SimpleExpression {
         
         if (!isWebContext(processingContext.getContext()) && !isLinkBaseAbsolute(linkBase) && !isLinkBaseServerRelative(linkBase)) {
             throw new TemplateProcessingException(
-                    "Link base \"" + linkBase + "\" cannot be context relative (/) unless you implement the " + 
+                    "Link base \"" + linkBase + "\" cannot be context relative (/) or page relative unless you implement the " +
                     IWebContext.class.getName() + " interface (context is of class: " +
                     processingContext.getContext().getClass().getName() + ")");
         }
@@ -263,7 +263,7 @@ public final class LinkExpression extends SimpleExpression {
          */
         final int questionMarkPosition = linkBase.indexOf("?"); 
         
-        final StringBuffer parametersBuffer = new StringBuffer();
+        final StringBuilder parametersBuffer = new StringBuilder();
         
         for (final Map.Entry<String,List<Object>> parameterEntry : parameters.entrySet()) {
             
@@ -294,7 +294,7 @@ public final class LinkExpression extends SimpleExpression {
                 } else {
                 
                     try {
-                        parametersBuffer.append(parameterName + "=" + URLEncoder.encode(parameterValue, "UTF-8"));
+                        parametersBuffer.append(parameterName).append("=").append(URLEncoder.encode(parameterValue, "UTF-8"));
                     } catch (UnsupportedEncodingException e) {
                         throw new TemplateProcessingException("Exception while processing link parameters", e);
                     }
@@ -305,43 +305,48 @@ public final class LinkExpression extends SimpleExpression {
             
         }
         
-        if (isLinkBaseAbsolute(linkBase)) {
-            return linkBase + parametersBuffer.toString() + urlFragment;
-        } else if (!isWebContext(processingContext.getContext()) && isLinkBaseServerRelative(linkBase)) {
+        /*
+         * Context is not web: URLs can only be absolute or server-relative
+         */
+        if (!isWebContext(processingContext.getContext())) {
+
+            if (isLinkBaseAbsolute(linkBase)) {
+              return linkBase + parametersBuffer.toString() + urlFragment;
+            }
+            // isLinkBaseServerRelative(linkBase) == true
             return linkBase.substring(1) + parametersBuffer.toString() + urlFragment;
         }
         
+        /*
+         * Context is web
+         */
+
         final IWebContext webContext = (IWebContext) processingContext.getContext();
         final HttpServletRequest request = webContext.getHttpServletRequest();
 
-        if (isLinkBaseContextRelative(linkBase)) {
-            
-            final String contextName = request.getContextPath();
-            
-            if (questionMarkPosition == -1) {
-                return contextName + linkBase + parametersBuffer.toString() + urlFragment;
-            }
-            
-            final String linkBasePart1 = linkBase.substring(0,questionMarkPosition);
-            final String linkBasePart2 = linkBase.substring(questionMarkPosition);
-            return contextName + linkBasePart1 + linkBasePart2 + parametersBuffer.toString() + urlFragment;
-            
-        } else if (isLinkBaseServerRelative(linkBase)) {
-            
-            if (questionMarkPosition == -1) {
-                // remove the "~" from the link base
-                return linkBase.substring(1) + parametersBuffer.toString() + urlFragment;
-            }
-            
-            final String linkBasePart1 = linkBase.substring(0,questionMarkPosition);
-            final String linkBasePart2 = linkBase.substring(questionMarkPosition);
-            // remove the "~" from the link base part 1 
-            return linkBasePart1.substring(1) + linkBasePart2 + parametersBuffer.toString() + urlFragment;
-            
-        }
+        String url;
 
-        
-        return linkBase + parametersBuffer.toString() + urlFragment;
+        if (isLinkBaseContextRelative(linkBase)) {
+
+          url = request.getContextPath() + linkBase + parametersBuffer.toString() + urlFragment;
+
+        } else if (isLinkBaseServerRelative(linkBase)) {
+
+            // remove the "~" from the link base
+          url = linkBase.substring(1) + parametersBuffer.toString() + urlFragment;
+
+        } else if (isLinkBaseAbsolute(linkBase)) {
+
+          url = linkBase + parametersBuffer.toString() + urlFragment;
+
+        } else {
+          // Link base is current-URL-relative
+
+          url = linkBase + parametersBuffer.toString() + urlFragment;
+
+        }
+        // Innovation District Change compared to original Thymeleaf: never encode URL (i.e. append jsessionid)
+        return url;
         
     }
     
@@ -460,29 +465,6 @@ public final class LinkExpression extends SimpleExpression {
         }
         
     }
-    
-    
-    
-    @SuppressWarnings("unchecked")
-    private static boolean isUserAgentGoogleBot(final HttpServletRequest request) {
-        
-        final Enumeration<String> userAgentHeaders = request.getHeaders("User-Agent");
-        if (userAgentHeaders == null) {
-            return false;
-        }
-        
-        while (userAgentHeaders.hasMoreElements()) {
-            final String header = userAgentHeaders.nextElement();
-            if (header != null) {
-                if (header.toLowerCase().contains("googlebot")) {
-                    return true;
-                }
-            }
-        }
-        
-        return false;
-        
-    }
 
-    
+
 }
