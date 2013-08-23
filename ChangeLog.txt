@@ -3,9 +3,9 @@
 - Fixed EnumMap's (and maybe other implementations of Map) not iterating correctly (always repeating the
   same element) because of their internal iterators reusing the same Map.Entry object.
 - Fixed th:attr not correctly rendering fixed-value conditional attributes like "multiple", "selected",etc.
-- Fixed th:attrappend, th:attrprepend and th:classappend not correctly render results when the 
+- Fixed th:attrappend, th:attrprepend and th:classappend not correctly render results when the
   appended attribute already exists and is empty before processing the template.
-- Fixed fixed-value conditional attributes not removing the target attribute on false evaluation if 
+- Fixed fixed-value conditional attributes not removing the target attribute on false evaluation if
   it this target attribute already existed before processing.
 - Fixed multiple execution of "th:case" inside "th:switch" possible when th:case="*" appeared before
   non-default case blocks.
@@ -20,7 +20,7 @@
 ======
 - Fixed resource bundle messages not being processed as such when message parameters were empty.
 - Fixed link expressions not correctly handling #{...} expressions as base URL.
-- Fixed link expressions with parenthesized base URLs and no parameters ("@{(${base})}") not being 
+- Fixed link expressions with parenthesized base URLs and no parameters ("@{(${base})}") not being
   correctly parsed.
 - Added a way to escape "__" string in attributes ("\_\_") without being parsed as a preprocessing mark.
 - Fixed handling of local variables map in Node class so that variables added directly with
@@ -29,8 +29,8 @@
 - Fixed behaviour of th:remove="all-but-first". Non-element nodes were not being copied if more than
   one child element existed.
 - Fixed ArithmeticException in number literal division if result has a non-terminating decimal expansion.
-- Fixed whitespace around comments dissappearing after template processing. 
-- Fixed JavaScript/Dart inlining not correctly adding a final semicolon if a comment is present after 
+- Fixed whitespace around comments dissappearing after template processing.
+- Fixed JavaScript/Dart inlining not correctly adding a final semicolon if a comment is present after
   the ";" sign.
 - Updated OGNL dependency from version 3.0.5 to 3.0.6.
 - Fixed equality comparison between Strings and Characters.
@@ -50,7 +50,7 @@
 - Added null-safe #strings.equals(...) and #strings.equalsIgnoreCase(...) utility methods.
 - Added null-safe #strings.concat(...) and #strings.concatReplaceNulls(...) utility methods.
 - Modified JavaScript escaping so that '/' is only escaped if appears after '<'.
-  
+
 
 2.0.15
 ======
@@ -61,6 +61,9 @@
 - Fixed: Added close operation on template Readers in case a parsing exception occurs.
 - Fixed: Removed case-sensitivity resolving element processors.
   
+2.0.14-ID
+=========
+- Do not add JSESSIONID to the URL
 
 2.0.14
 ======

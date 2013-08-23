@@ -30,7 +30,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -345,9 +344,8 @@ public final class LinkExpression extends SimpleExpression {
         final IWebContext webContext = (IWebContext) processingContext.getContext();
         
         final HttpServletRequest request = webContext.getHttpServletRequest();
-        final HttpServletResponse response = webContext.getHttpServletResponse();
 
-        String url = null;
+      String url;
         
         if (isLinkBaseContextRelative(linkBase)) {
             
@@ -369,7 +367,7 @@ public final class LinkExpression extends SimpleExpression {
             
         }
 
-        return (response != null? response.encodeURL(url) : url);
+        return url;
         
     }
     
