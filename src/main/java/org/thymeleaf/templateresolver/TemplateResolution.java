@@ -40,6 +40,7 @@ import org.thymeleaf.util.Validate;
  *   <li>The validity of this template resolution, indicating whether this template can be included
  *       in cache once resolved, and the logic that will determine for how long and in which
  *       circumstances its cache entry will still be considered valid.</li>
+ *   <li>Optionally the key which should be used to lookup and store the resolved template in cache.</li>
  * </ul>
  * <p>
  *   The fact that a Template Resolver returns a {@link TemplateResolution} does not necessarily
@@ -60,14 +61,15 @@ public final class TemplateResolution {
     private final String characterEncoding;
     private final String templateMode;
     private final ITemplateResolutionValidity validity;
+    private String cacheKey;
 
 
-    
+
     public TemplateResolution(
-            final String templateName, final String resourceName, 
-            final IResourceResolver resourceResolver, final String characterEncoding, 
-            final String templateMode,
-            final ITemplateResolutionValidity validity) {
+        final String templateName, final String resourceName,
+        final IResourceResolver resourceResolver, final String characterEncoding,
+        final String templateMode,
+        final ITemplateResolutionValidity validity) {
         super();
         Validate.notNull(templateName, "Template name cannot be null");
         Validate.notNull(resourceName, "Resource name cannot be null");
@@ -80,6 +82,18 @@ public final class TemplateResolution {
         this.characterEncoding = characterEncoding;
         this.templateMode = templateMode;
         this.validity = validity;
+    }
+
+
+
+    public TemplateResolution(
+        final String templateName, final String resourceName,
+            final IResourceResolver resourceResolver, final String characterEncoding, 
+            final String templateMode,
+            final ITemplateResolutionValidity validity,
+            final String cacheKey) {
+        this(templateName, resourceName, resourceResolver, characterEncoding, templateMode, validity);
+        this.cacheKey = cacheKey;
     }
     
 
@@ -181,6 +195,22 @@ public final class TemplateResolution {
     public ITemplateResolutionValidity getValidity() {
         return this.validity;
     }
-    
-    
+
+
+    /**
+     * <p>
+     *   Returns the cache key, if specified. Default behaviour is to use the template name.
+     * </p>
+     * <p>
+     *   If not null this key should be used to lookup and store the template in the template cache.
+     * </p>
+     * <p>
+     *   When null the template name should be used to store the template in the template cache.
+     * </p>
+     *
+     * @return the specified cache key
+     */
+    public String getCacheKey() {
+        return cacheKey;
+    }
 }

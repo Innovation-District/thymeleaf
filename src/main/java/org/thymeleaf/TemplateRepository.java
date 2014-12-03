@@ -202,13 +202,28 @@ public final class TemplateRepository {
         final Set<ITemplateResolver> templateResolvers = configuration.getTemplateResolvers();
         TemplateResolution templateResolution = null;
         InputStream templateInputStream = null;
-        
+        String cacheKey = null;
+
         for (final ITemplateResolver templateResolver : templateResolvers) {
                 
                 templateResolution = templateResolver.resolveTemplate(templateProcessingParameters);
-                
+
                 if (templateResolution != null) {
-                    
+
+                    cacheKey = templateResolution.getCacheKey();
+
+                    if (this.templateCache != null &&
+                        cacheKey != null) {
+                        final Template cached =
+                            this.templateCache.get(cacheKey);
+                        if (cached != null) {
+                            if (logger.isTraceEnabled()) {
+                                logger.trace("[THYMELEAF][{}] Found template resolver \"{}\" specific template in the cache with key \"{}\"", new Object[] {TemplateEngine.threadIndex(), templateResolver.getName(), cacheKey});
+                            }
+                            return cached.createDuplicate();
+                        }
+                    }
+
                     final String resourceName = templateResolution.getResourceName();
 
                     final IResourceResolver resourceResolver = templateResolution.getResourceResolver();
@@ -288,7 +303,11 @@ public final class TemplateRepository {
 
         if (this.templateCache != null) {
             if (templateResolution.getValidity().isCacheable()) {
-                this.templateCache.put(templateName, template);
+                if (cacheKey != null) {
+                    this.templateCache.put(cacheKey, template);
+                } else {
+                    this.templateCache.put(templateName, template);
+                }
                 return template.createDuplicate();
             }
         }
