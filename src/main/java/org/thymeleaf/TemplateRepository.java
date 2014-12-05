@@ -204,7 +204,6 @@ public final class TemplateRepository {
         final Set<ITemplateResolver> templateResolvers = configuration.getTemplateResolvers();
 
         InputStream templateInputStream = null;
-        String cacheKey = null;
 
         for (final ITemplateResolver templateResolver : templateResolvers) {
                 
