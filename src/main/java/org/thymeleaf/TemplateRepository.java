@@ -190,17 +190,19 @@ public final class TemplateRepository {
 
         final String templateName = templateProcessingParameters.getTemplateName();
 
+        TemplateResolution templateResolution = getFirstTemplateResolution(templateProcessingParameters);
+
         if (this.templateCache != null) {
-            final Template cached = 
-                this.templateCache.get(templateName);
+            final Template cached =
+                this.templateCache.get(determineCacheKey(templateResolution, templateName));
             if (cached != null) {
                 return cached.createDuplicate();
             }
         }
-        
+
         final Configuration configuration = templateProcessingParameters.getConfiguration();
         final Set<ITemplateResolver> templateResolvers = configuration.getTemplateResolvers();
-        TemplateResolution templateResolution = null;
+
         InputStream templateInputStream = null;
         String cacheKey = null;
 
@@ -210,15 +212,12 @@ public final class TemplateRepository {
 
                 if (templateResolution != null) {
 
-                    cacheKey = templateResolution.getCacheKey();
-
-                    if (this.templateCache != null &&
-                        cacheKey != null) {
+                    if (this.templateCache != null) {
                         final Template cached =
-                            this.templateCache.get(cacheKey);
+                            this.templateCache.get(determineCacheKey(templateResolution, templateName));
                         if (cached != null) {
                             if (logger.isTraceEnabled()) {
-                                logger.trace("[THYMELEAF][{}] Found template resolver \"{}\" specific template in the cache with key \"{}\"", new Object[] {TemplateEngine.threadIndex(), templateResolver.getName(), cacheKey});
+                                logger.trace("[THYMELEAF][{}] Found template resolver \"{}\" specific template in the cache with key \"{}\"", new Object[] {TemplateEngine.threadIndex(), templateResolver.getName(), determineCacheKey(templateResolution, templateName)});
                             }
                             return cached.createDuplicate();
                         }
@@ -303,11 +302,7 @@ public final class TemplateRepository {
 
         if (this.templateCache != null) {
             if (templateResolution.getValidity().isCacheable()) {
-                if (cacheKey != null) {
-                    this.templateCache.put(cacheKey, template);
-                } else {
-                    this.templateCache.put(templateName, template);
-                }
+                this.templateCache.put(determineCacheKey(templateResolution, templateName), template);
                 return template.createDuplicate();
             }
         }
@@ -315,8 +310,6 @@ public final class TemplateRepository {
         return template;
         
     }
-
-    
 
     /**
      * <p>
@@ -365,9 +358,39 @@ public final class TemplateRepository {
         return fragmentNodes;
         
     }
-    
-    
-    
+
+
+
+    private String determineCacheKey(final TemplateResolution templateResolution, final String templateName) {
+
+        if (templateResolution.getCacheKey() != null) {
+            return templateResolution.getCacheKey();
+        }
+
+        return templateName;
+    }
+
+
+    private TemplateResolution getFirstTemplateResolution(
+        final TemplateProcessingParameters templateProcessingParameters) {
+
+        final Configuration configuration = templateProcessingParameters.getConfiguration();
+        final Set<ITemplateResolver> templateResolvers = configuration.getTemplateResolvers();
+
+        for (final ITemplateResolver templateResolver : templateResolvers) {
+
+            final TemplateResolution templateResolution = templateResolver
+                .resolveTemplate(templateProcessingParameters);
+
+            if (templateResolution != null) {
+                return templateResolution;
+            }
+        }
+
+        return null;
+    }
+
+
     private static String computeFragmentCacheKey(final String templateMode, final String fragment) {
         return '{' +  templateMode + '}' + fragment;
     }
