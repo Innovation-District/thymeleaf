@@ -194,7 +194,7 @@ public final class TemplateRepository {
 
         if (this.templateCache != null) {
             final Template cached =
-                this.templateCache.get(determineCacheKey(templateResolution, templateName));
+                this.templateCache.get(determineCacheKey(templateResolution));
             if (cached != null) {
                 return cached.createDuplicate();
             }
@@ -213,10 +213,10 @@ public final class TemplateRepository {
 
                     if (this.templateCache != null) {
                         final Template cached =
-                            this.templateCache.get(determineCacheKey(templateResolution, templateName));
+                            this.templateCache.get(determineCacheKey(templateResolution));
                         if (cached != null) {
                             if (logger.isTraceEnabled()) {
-                                logger.trace("[THYMELEAF][{}] Found template resolver \"{}\" specific template in the cache with key \"{}\"", new Object[] {TemplateEngine.threadIndex(), templateResolver.getName(), determineCacheKey(templateResolution, templateName)});
+                                logger.trace("[THYMELEAF][{}] Found template resolver \"{}\" specific template in the cache with key \"{}\"", new Object[] {TemplateEngine.threadIndex(), templateResolver.getName(), determineCacheKey(templateResolution)});
                             }
                             return cached.createDuplicate();
                         }
@@ -301,7 +301,7 @@ public final class TemplateRepository {
 
         if (this.templateCache != null) {
             if (templateResolution.getValidity().isCacheable()) {
-                this.templateCache.put(determineCacheKey(templateResolution, templateName), template);
+                this.templateCache.put(determineCacheKey(templateResolution), template);
                 return template.createDuplicate();
             }
         }
@@ -360,13 +360,13 @@ public final class TemplateRepository {
 
 
 
-    private String determineCacheKey(final TemplateResolution templateResolution, final String templateName) {
+    private String determineCacheKey(final TemplateResolution templateResolution) {
 
         if (templateResolution.getCacheKey() != null) {
             return templateResolution.getCacheKey();
         }
 
-        return templateName;
+        return templateResolution.getTemplateName();
     }
 
 
